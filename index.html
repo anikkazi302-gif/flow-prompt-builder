@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flow Prompt Builder — Google Flow Video Prompts for AI Movies</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    background: #0B0F19; color: #E5E7EB; min-height: 100vh; padding: 22px 14px 60px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 24px; border-bottom: 1px solid #374151; padding-bottom: 18px; }
+  header .logo { font-size: 52px; }
+  h1 { font-size: 32px; color: #F59E0B; letter-spacing: 1px; }
+  header p { font-size: 15px; color: #9CA3AF; margin-top: 8px; line-height: 1.6; font-family: "Segoe UI", Verdana, sans-serif; }
+  .card {
+    background: #111827; border: 1px solid #374151; border-radius: 14px;
+    padding: 20px; margin-bottom: 18px; box-shadow: 0 8px 24px rgba(0,0,0,.45);
+  }
+  h2 { font-size: 19px; color: #FBBF24; margin-bottom: 14px; font-family: "Segoe UI", Verdana, sans-serif; }
+  h2 .step { background:#F59E0B; color:#111827; border-radius: 50%; display:inline-block; width:26px; height:26px; line-height:26px; text-align:center; font-size:15px; margin-right:6px; font-family: "Segoe UI", Verdana, sans-serif; }
+  label { display: block; font-size: 14px; font-weight: bold; color: #D1D5DB; margin: 14px 0 6px; font-family: "Segoe UI", Verdana, sans-serif; }
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%; padding: 11px 12px; border-radius: 9px; border: 1px solid #4B5563;
+    background: #1F2937; color: #F9FAFB; font-size: 15px; font-family: "Segoe UI", Verdana, sans-serif;
+  }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #F59E0B; border-color: #F59E0B; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 180px; }
+  .char-row { border: 1px solid #374151; border-radius: 10px; padding: 12px; margin-bottom: 10px; background: #0F172A; }
+  .char-head { display: flex; align-items: center; gap: 10px; cursor: pointer; font-family: "Segoe UI", Verdana, sans-serif; }
+  .char-head input { width: 18px; height: 18px; accent-color: #F59E0B; cursor: pointer; }
+  .char-head .cname { font-size: 16px; font-weight: bold; color: #FDE68A; }
+  .char-desc { font-size: 13px; color: #9CA3AF; margin: 8px 0 0 28px; line-height: 1.55; font-family: "Segoe UI", Verdana, sans-serif; }
+  .char-action { margin: 10px 0 0 28px; }
+  .char-action input { width: 100%; }
+  .dlg-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: flex-start; flex-wrap: wrap; }
+  .dlg-row select.speaker { flex: 0 0 170px; min-width: 150px; }
+  .dlg-row input.line { flex: 1; min-width: 200px; }
+  .dlg-row select.gap { flex: 0 0 130px; min-width: 120px; }
+  .dlg-row .rm { flex: 0 0 auto; }
+  .btn {
+    border: none; border-radius: 999px; padding: 12px 22px; font-size: 15px; font-weight: bold;
+    cursor: pointer; font-family: "Segoe UI", Verdana, sans-serif;
+  }
+  .btn-primary { background: #F59E0B; color: #111827; box-shadow: 0 4px 0 #92400E; }
+  .btn-primary:active { transform: translateY(2px); box-shadow: 0 2px 0 #92400E; }
+  .btn-ghost { background: transparent; color: #FBBF24; border: 2px solid #F59E0B; }
+  .btn-danger { background: transparent; color: #F87171; border: 1px solid #7F1D1D; border-radius: 8px; padding: 10px 12px; font-size: 14px; }
+  .btn-danger:hover { background: #7F1D1D; color: #fff; }
+  .actions-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .model-opt { border: 1px solid #374151; border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; gap: 10px; align-items: flex-start; cursor: pointer; font-family: "Segoe UI", Verdana, sans-serif; }
+  .model-opt:hover { border-color: #F59E0B; }
+  .model-opt input { margin-top: 3px; accent-color: #F59E0B; }
+  .model-opt .mname { font-weight: bold; color: #FDE68A; font-size: 15px; }
+  .model-opt .mhint { font-size: 13px; color: #9CA3AF; line-height: 1.5; margin-top: 2px; }
+  .error { background: #7F1D1D; color: #FECACA; border-radius: 10px; padding: 12px; font-size: 14px; margin-top: 12px; font-family: "Segoe UI", Verdana, sans-serif; line-height: 1.5; }
+  .prompt-out {
+    white-space: pre-wrap; word-break: break-word; background: #0F172A; border: 1px solid #4B5563;
+    border-radius: 12px; padding: 16px; font-size: 14.5px; line-height: 1.7; color: #E5E7EB;
+    font-family: "Segoe UI", Verdana, sans-serif; max-height: 70vh; overflow-y: auto;
+  }
+  .copy-btn {
+    margin-top: 10px; border: 2px solid #F59E0B; background: #F59E0B; color: #111827;
+    border-radius: 999px; padding: 10px 20px; font-size: 14px; font-weight: bold; cursor: pointer; font-family: "Segoe UI", Verdana, sans-serif;
+  }
+  .copy-btn.copied { background: #22C55E; border-color: #22C55E; color: #fff; }
+  .hint { font-size: 13.5px; color: #9CA3AF; line-height: 1.6; font-family: "Segoe UI", Verdana, sans-serif; }
+  .empty { color: #9CA3AF; font-size: 15px; text-align: center; padding: 18px 8px; line-height: 1.6; font-family: "Segoe UI", Verdana, sans-serif; }
+  footer { text-align: center; font-size: 13px; color: #6B7280; margin-top: 26px; line-height: 1.6; font-family: "Segoe UI", Verdana, sans-serif; }
+  @media (max-width: 560px) { h1 { font-size: 25px; } .dlg-row select.speaker, .dlg-row select.gap { flex: 1 1 100%; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🎬🐉</div>
+    <h1>Flow Prompt Builder</h1>
+    <p>Build a complete Google Flow video prompt for your AI movie — with the locked camera rule, face lock,
+    second-by-second timing and dialogue attribution. Fill in the scene, press Build, copy the prompt into Flow.</p>
+  </header>
+
+  <section class="card">
+    <h2><span class="step">1</span>Scene basics</h2>
+    <label for="sceneTitle">Scene title</label>
+    <input type="text" id="sceneTitle" placeholder="e.g. Ember steps out of the cottage" maxlength="120">
+    <div class="row">
+      <div>
+        <label for="setting">Setting</label>
+        <input type="text" id="setting" placeholder="e.g. in front of Priya's old stone cottage" maxlength="200">
+      </div>
+      <div>
+        <label for="timeOfDay">Time of day</label>
+        <select id="timeOfDay">
+          <option>Morning — overcast grey sky, no sun</option>
+          <option>Daytime — overcast grey sky, no sun</option>
+          <option>Evening — dim, fading light</option>
+          <option>Night — dark, cold, moonlight only</option>
+          <option>Dawn — pale first light</option>
+        </select>
+      </div>
+      <div>
+        <label for="duration">Duration (seconds)</label>
+        <input type="number" id="duration" min="5" max="30" step="1" value="10">
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">2</span>Characters in this scene</h2>
+    <p class="hint">Tick every character who is visibly seen in this scene. A character who is not seen gets no reference photo and no description. Write each character's action in this scene.</p>
+    <div id="charList" style="margin-top:12px;"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">3</span>Dialogue (each line belongs to its speaker only)</h2>
+    <p class="hint">Add one row per spoken line, in order. Pick the speaker, write the exact line, and say what gap follows it. Lines with no speaker selected are ignored.</p>
+    <div id="dlgList" style="margin-top:12px;"></div>
+    <div class="actions-row">
+      <button class="btn btn-ghost" id="addDlgBtn" type="button">＋ Add a dialogue line</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">4</span>Model</h2>
+    <div id="modelList"></div>
+  </section>
+
+  <section class="card">
+    <div class="actions-row" style="margin-top:0;">
+      <button class="btn btn-primary" id="buildBtn" type="button">🎬 Build my prompt</button>
+      <button class="btn btn-ghost" id="clearBtn" type="button">Clear form</button>
+    </div>
+    <div class="error" id="errorBox" hidden></div>
+  </section>
+
+  <section class="card" id="outputCard" hidden>
+    <h2><span class="step">5</span>Your finished prompt — copy it into Flow</h2>
+    <div class="prompt-out" id="promptOut"></div>
+    <button class="copy-btn" id="copyPromptBtn" type="button">📋 Copy prompt</button>
+  </section>
+
+  <section class="card" id="emptyCard">
+    <p class="empty">👆 Fill in the scene above and press <b>Build my prompt</b>.<br>
+    The finished prompt will contain the camera rule, the face lock, a second-by-second breakdown,
+    every dialogue line with its speaker, and the standing rules (no blood ever, 16:9 widescreen, one continuous shot).</p>
+  </section>
+
+  <footer>
+    Flow Prompt Builder — open source (MIT). Prompts are built on your device; nothing is uploaded anywhere.<br>
+    Works with Google Flow (Veo 3.1 Fast / Veo 3.1 Light / Omni Flash), 16:9 widescreen.
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------------ */
+/*  Locked text blocks — these go into EVERY prompt, verbatim          */
+/* ------------------------------------------------------------------ */
+const CAMERA_RULE = "CAMERA RULE: The camera does whatever it needs to do to show the characters well \u2014 it may turn, move, change angle or cut whenever the scene needs it; that is the camera's own job. All camera decisions belong to the camera alone: where to zoom in, where to zoom out, which angle to use, where to use a tracking shot, when to pull back, when to push forward, who to focus on, and when to zoom onto a face \u2014 whatever makes the scene beautiful and brings out its emotion, pain, anger and feeling. The characters pay NO attention to the camera at all: they NEVER look at it, NEVER act for it, and do nothing for it \u2014 they stay in their own business and live their scene naturally, as if no camera were there.";
+
+const FACE_LOCK = "Faces must match the reference photos exactly \u2014 not even slightly.";
+
+/* ------------------------------------------------------------------ */
+/*  Characters — full descriptions from the locked reference sheets    */
+/* ------------------------------------------------------------------ */
+const CHARACTERS = [
+  {
+    id: "priya", name: "Priya",
+    desc: "Priya \u2014 a young woman with long dark hair, a soft gentle face and serious eyes; she wears a simple old worn dress; she NEVER smiles.",
+    defaultAction: "stands still, watching, silent"
+  },
+  {
+    id: "ember", name: "Ember",
+    desc: "Ember \u2014 a pure white dragon with smooth, fine white scales (slightly glossy, never large rough plates); dark reddish-brown eyes with a dark vertical pupil; a graceful, powerful body. Ember is ALWAYS pure white.",
+    defaultAction: "stands tall, glaring, head held high"
+  },
+  {
+    id: "victor", name: "Father Victor",
+    desc: "Father Victor \u2014 an older priest with dark wavy hair and a grey-flecked beard; he wears a long black hooded clerical cloak with a light stole and a cross pendant.",
+    defaultAction: "stands at the front of the crowd, grave and silent"
+  },
+  {
+    id: "liza", name: "Liza",
+    desc: "Liza \u2014 a heavier woman with middle-parted black hair in a low bun, a round full weathered face and deep-set dark-brown eyes; she wears an old worn long black dress to her ankles, an old worn black crocheted fringed shawl, and worn black flat shoes. ALWAYS black, ALWAYS old and worn.",
+    defaultAction: "shouts and points, full of anger"
+  },
+  {
+    id: "martha", name: "Martha",
+    desc: "Martha \u2014 an older woman with grey hair tied back and a lined, weathered face; she wears an old worn shawl over a long plain dress.",
+    defaultAction: "stands with the crowd, worried and watchful"
+  },
+  {
+    id: "raju", name: "Raju",
+    desc: "Raju \u2014 a young MAN, a grown adult aged 25\u201327 (NOT a child, NOT a teenager); lean and slim, about 5'8\"\u20135'10\"; round full face, warm brown skin, thick black brows, brown eyes, broad nose, a small dark mole under his RIGHT eye, black mustache and short full boxed beard along his jaw and chin, thick wavy voluminous black hair swept up and back; he wears a beige cream lace-up linen shirt (loose, untucked, sleeves to the elbow), dark loose trousers and brown leather boots.",
+    defaultAction: "stands among the villagers, watching the scene"
+  },
+  {
+    id: "bram", name: "Bram",
+    desc: "Bram \u2014 a heavy-set man with short dark hair and a short beard; he wears a light shirt with rolled sleeves, a brown vest and a stained work apron.",
+    defaultAction: "stands with the crowd, holding his ground"
+  }
+];
+
+const MODELS = [
+  { id: "fast",  name: "Veo 3.1 Fast",  hint: "Best for dialogue, close-ups, emotional scenes and fast action." },
+  { id: "light", name: "Veo 3.1 Light", hint: "Best for simple wide or static shots with little movement." },
+  { id: "omni",  name: "Omni Flash",    hint: "Tests and drafts (720p workflow). Use for trying a scene before the final take." }
+];
+
+let currentPrompt = "";
+
+/* ------------------------------------------------------------------ */
+/*  Form rendering                                                     */
+/* ------------------------------------------------------------------ */
+function renderCharacters() {
+  const list = document.getElementById("charList");
+  list.innerHTML = "";
+  CHARACTERS.forEach(function (c) {
+    const row = document.createElement("div");
+    row.className = "char-row";
+    row.innerHTML =
+      '<label class="char-head"><input type="checkbox" data-char="' + c.id + '"> <span class="cname">' + c.name + "</span></label>" +
+      '<div class="char-desc">' + c.desc + "</div>" +
+      '<div class="char-action" hidden><input type="text" data-action="' + c.id + '" placeholder="What does ' + c.name + ' do in this scene? e.g. ' + c.defaultAction + '" maxlength="200"></div>';
+    list.appendChild(row);
+    const box = row.querySelector('input[type="checkbox"]');
+    const actionDiv = row.querySelector(".char-action");
+    box.addEventListener("change", function () {
+      actionDiv.hidden = !box.checked;
+      refreshDialogueSpeakers();
+    });
+  });
+}
+
+function renderModels() {
+  const list = document.getElementById("modelList");
+  list.innerHTML = "";
+  MODELS.forEach(function (m, i) {
+    const label = document.createElement("label");
+    label.className = "model-opt";
+    label.innerHTML =
+      '<input type="radio" name="model" value="' + m.name + '"' + (i === 0 ? " checked" : "") + ">" +
+      '<span><span class="mname">' + m.name + '</span><div class="mhint">' + m.hint + "</div></span>";
+    list.appendChild(label);
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Dialogue rows                                                      */
+/* ------------------------------------------------------------------ */
+function speakerOptions() {
+  const selected = getSelectedCharacters().map(function (c) { return c.name; });
+  const extra = ["Crowd (shouting together)", "Off-screen voice"];
+  return selected.concat(extra);
+}
+
+function addDialogueRow(speaker, line, gap) {
+  const list = document.getElementById("dlgList");
+  const row = document.createElement("div");
+  row.className = "dlg-row";
+  const names = speakerOptions();
+  if (speaker && names.indexOf(speaker) === -1) names.unshift(speaker);
+  const opts = names.map(function (s) {
+    return '<option value="' + s + '"' + (s === speaker ? " selected" : "") + ">" + s + "</option>";
+  }).join("");
+  row.innerHTML =
+    '<select class="speaker" aria-label="Speaker"><option value="">— Speaker —</option>' + opts + "</select>" +
+    '<input class="line" type="text" placeholder="Exact spoken line, e.g. Ember, don\'t hurt anyone." maxlength="200" value="' + (line || "").replace(/"/g, "&quot;") + '">' +
+    '<select class="gap" aria-label="Gap after this line">' +
+      '<option value="none"' + (gap === "none" ? " selected" : "") + ">No gap</option>" +
+      '<option value="short"' + (gap === "short" ? " selected" : "") + ">Short gap</option>" +
+      '<option value="long"' + (gap === "long" ? " selected" : "") + ">Long gap</option>" +
+    "</select>" +
+    '<button class="btn-danger rm" type="button" title="Remove this line">✕</button>';
+  row.querySelector(".rm").addEventListener("click", function () { row.remove(); });
+  list.appendChild(row);
+}
+
+function refreshDialogueSpeakers() {
+  document.querySelectorAll("#dlgList .dlg-row").forEach(function (row) {
+    const sel = row.querySelector(".speaker");
+    const current = sel.value;
+    const names = speakerOptions();
+    // Never silently drop a speaker that was already picked on this row.
+    if (current && names.indexOf(current) === -1) names.unshift(current);
+    sel.innerHTML = '<option value="">— Speaker —</option>' +
+      names.map(function (s) {
+        return '<option value="' + s + '"' + (s === current ? " selected" : "") + ">" + s + "</option>";
+      }).join("");
+    if (current) sel.value = current;
+  });
+}
+
+function getDialogue() {
+  const out = [];
+  document.querySelectorAll("#dlgList .dlg-row").forEach(function (row) {
+    const speaker = row.querySelector(".speaker").value;
+    const line = row.querySelector(".line").value.trim();
+    const gap = row.querySelector(".gap").value;
+    if (speaker && line) out.push({ speaker: speaker, line: line, gap: gap });
+  });
+  return out;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Selected characters                                                */
+/* ------------------------------------------------------------------ */
+function getSelectedCharacters() {
+  const out = [];
+  CHARACTERS.forEach(function (c) {
+    const box = document.querySelector('input[data-char="' + c.id + '"]');
+    if (box && box.checked) {
+      const actInput = document.querySelector('input[data-action="' + c.id + '"]');
+      const action = actInput && actInput.value.trim() ? actInput.value.trim() : c.defaultAction;
+      out.push({ name: c.name, desc: c.desc, action: action });
+    }
+  });
+  return out;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Second-by-second timing — covers 0 to duration with no gaps       */
+/* ------------------------------------------------------------------ */
+function buildTimeline(duration, dialogue, chars) {
+  // Segments: opening, then per dialogue line a speaking segment + a gap segment,
+  // then a closing action segment. Every segment gets at least 1 second.
+  const segments = [];
+  segments.push({
+    label: "Scene opens: the setting is established and every character is in place.",
+    want: 2
+  });
+  dialogue.forEach(function (d) {
+    segments.push({ label: d.speaker + ' says: "' + d.line + '"', want: 2 });
+    if (d.gap === "short") segments.push({ label: "Short gap \u2014 no dialogue; the characters hold their positions.", want: 1 });
+    if (d.gap === "long") segments.push({ label: "Long gap \u2014 no dialogue; the camera holds on the characters' faces.", want: 2 });
+  });
+  const closingAction = chars.length
+    ? chars.map(function (c) { return c.name + " " + c.action; }).join("; ") + "."
+    : "The scene holds until the last frame.";
+  segments.push({ label: "Final action: " + closingAction, want: 2 });
+
+  // The breakdown must cover every second with no gaps, so it needs at least
+  // one second per segment. If the dialogue needs more than the chosen duration,
+  // the breakdown runs longer and says so plainly instead of dropping lines.
+  const total = segments.reduce(function (s, g) { return s + g.want; }, 0);
+  const effective = Math.max(duration, segments.length);
+  const note = effective > duration
+    ? "Note: this dialogue needs at least " + effective + "s, so the breakdown below runs to " + effective + "s \u2014 raise the duration or shorten the dialogue."
+    : null;
+  if (total <= effective) {
+    segments.forEach(function (g) { g.secs = g.want; });
+    segments[segments.length - 1].secs += effective - total;
+  } else {
+    const scale = effective / total;
+    let assigned = 0;
+    segments.forEach(function (g) {
+      g.secs = Math.max(1, Math.floor(g.want * scale));
+      assigned += g.secs;
+    });
+    segments[segments.length - 1].secs += effective - assigned;
+  }
+  // Render continuous ranges from 0 to the effective duration.
+  const lines = [];
+  let t = 0;
+  segments.forEach(function (g) {
+    const end = t + g.secs;
+    lines.push(t + "\u2013" + end + "s: " + g.label);
+    t = end;
+  });
+  return { lines: lines, note: note, effective: effective };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Build the finished prompt                                          */
+/* ------------------------------------------------------------------ */
+function buildPrompt() {
+  const errorBox = document.getElementById("errorBox");
+  errorBox.hidden = true;
+  errorBox.textContent = "";
+
+  const title = document.getElementById("sceneTitle").value.trim() || "Untitled scene";
+  const setting = document.getElementById("setting").value.trim() || "An old village setting";
+  const timeOfDay = document.getElementById("timeOfDay").value;
+  let duration = parseInt(document.getElementById("duration").value, 10);
+  if (isNaN(duration) || duration < 5) duration = 5;
+  if (duration > 30) duration = 30;
+  const model = (document.querySelector('input[name="model"]:checked') || {}).value || "Veo 3.1 Fast";
+  const chars = getSelectedCharacters();
+  const dialogue = getDialogue();
+
+  if (chars.length === 0) {
+    errorBox.textContent = "Please tick at least one character in Step 2 — a character who is not seen gets no description and no reference photo, so the prompt needs at least one visible character.";
+    errorBox.hidden = false;
+    return;
+  }
+
+  const L = [];
+  L.push("SCENE: " + title);
+  L.push("SETTING: " + setting + " \u2014 " + timeOfDay + ".");
+  L.push("MODEL: " + model + " \u2014 " + duration + " seconds \u2014 16:9 widescreen.");
+  L.push("");
+  L.push("CHARACTERS PRESENT (each one in full, from their own reference sheet):");
+  chars.forEach(function (c) {
+    L.push("- " + c.desc + " Action in this scene: " + c.action + ".");
+  });
+  L.push("");
+  L.push(CAMERA_RULE);
+  L.push("");
+  L.push("FACE LOCK: " + FACE_LOCK);
+  L.push("");
+  const tl = buildTimeline(duration, dialogue, chars);
+  L.push("TIMING (second by second \u2014 no second skipped, the whole " + tl.effective + " seconds):");
+  if (tl.note) L.push(tl.note);
+  tl.lines.forEach(function (line) { L.push(line); });
+  L.push("");
+  if (dialogue.length) {
+    L.push("DIALOGUE (each character speaks ONLY their own lines; gaps are written explicitly):");
+    dialogue.forEach(function (d, i) {
+      L.push(d.speaker + ': "' + d.line + '"');
+      if (d.gap === "short") L.push("\u2014 short gap \u2014");
+      if (d.gap === "long") L.push("\u2014 long gap \u2014");
+    });
+  } else {
+    L.push("DIALOGUE: No dialogue in this clip \u2014 the scene plays in silence, with only natural sound.");
+  }
+  L.push("");
+  L.push("STANDING RULES:");
+  L.push("- NO blood ever \u2014 injury may be shown, never blood.");
+  L.push("- 16:9 widescreen.");
+  L.push("- One continuous shot \u2014 no cuts.");
+  L.push("- Every character speaks ONLY their own lines; one person's line is NEVER spoken by another.");
+  L.push("- Movements are completely natural and very fast.");
+  L.push("- Every needed sound is present properly at its moment \u2014 none missing, none faint.");
+  L.push("- No character is dropped, no character is changed, no face is changed.");
+
+  currentPrompt = L.join("\n");
+  document.getElementById("promptOut").textContent = currentPrompt;
+  document.getElementById("outputCard").hidden = false;
+  document.getElementById("emptyCard").hidden = true;
+  document.getElementById("outputCard").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Copy to clipboard (with fallback)                                  */
+/* ------------------------------------------------------------------ */
+function copyPrompt(btn) {
+  function done() {
+    const old = btn.textContent;
+    btn.textContent = "✅ Copied!";
+    btn.classList.add("copied");
+    setTimeout(function () { btn.textContent = old; btn.classList.remove("copied"); }, 1800);
+  }
+  function fallback() {
+    const ta = document.createElement("textarea");
+    ta.value = currentPrompt;
+    ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); done(); }
+    catch (e) { btn.textContent = "Copy failed — select the text manually"; }
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(currentPrompt).then(done).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Init                                                               */
+/* ------------------------------------------------------------------ */
+renderCharacters();
+renderModels();
+addDialogueRow("Priya", "Ember, don't hurt anyone.", "short");
+addDialogueRow("", "", "none");
+document.getElementById("addDlgBtn").addEventListener("click", function () { addDialogueRow("", "", "none"); });
+document.getElementById("buildBtn").addEventListener("click", buildPrompt);
+document.getElementById("copyPromptBtn").addEventListener("click", function () { copyPrompt(this); });
+document.getElementById("clearBtn").addEventListener("click", function () {
+  document.getElementById("sceneTitle").value = "";
+  document.getElementById("setting").value = "";
+  document.getElementById("duration").value = "10";
+  document.querySelectorAll('input[data-char]').forEach(function (b) { b.checked = false; });
+  document.querySelectorAll(".char-action").forEach(function (d) { d.hidden = true; });
+  document.querySelectorAll('input[data-action]').forEach(function (i) { i.value = ""; });
+  document.getElementById("dlgList").innerHTML = "";
+  addDialogueRow("", "", "none");
+  document.getElementById("outputCard").hidden = true;
+  document.getElementById("emptyCard").hidden = false;
+  document.getElementById("errorBox").hidden = true;
+  currentPrompt = "";
+});
+</script>
+</body>
+</html>
